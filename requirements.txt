@@ -1,0 +1,6 @@
+# Requires CUDA-capable GPU (e.g., A100, RTX 3090) and compatible CUDA driver
+torch>=2.1
+triton>=2.1
+numpy>=1.23
+pandas>=1.5
+matplotlib>=3.7
