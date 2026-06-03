@@ -49,7 +49,7 @@ NVIDIA A100-SXM4-80GB, CUDA-capable driver, Python 3.9+, PyTorch 2.1+, Triton 2.
 - Single-GPU, inference-shaped GEMMs; no distributed or training-loop measurement.
 - Absolute throughput is hardware and driver specific; the fusion speedup is the portable finding.
 - The 1.73x is the best small-batch fused shape, not a blanket claim (see "Where the win is" above).
-- Next: fused QKV projection and attention epilogues, KV-cache read/write kernels, and an edge-inference comparison on Jetson Orin (see [edge-llm-gpu-profiling](https://github.com/Drogon4231/edge-llm-gpu-profiling)).
+- Next: fused QKV projection and attention epilogues, KV-cache read/write kernels, and an edge-inference comparison on Jetson Orin (see [edge-llm-gpu-profiling](https://github.com/harshithkantamneni/edge-llm-gpu-profiling)).
 
 ## Author
 
