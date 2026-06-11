@@ -13,7 +13,7 @@ It reports p50 latency, GEMM-equivalent TFLOP/s, effective memory bandwidth, and
 | Shapes benchmarked | **76** LLaMA/Mistral-style projection and FFN GEMMs | `src/shapes.py` |
 | Metrics per shape | p50/p90 latency, TFLOP/s, GB/s, p90/p50 jitter | `data/*.csv` |
 
-**Where the win is.** cuBLAS is very well tuned for large dense GEMM, so a bare Triton GEMM is generally not faster (median about 0.78x vs PyTorch/cuBLAS across the 76 shapes). The win comes from fusion: folding `linear + bias + GeLU/SiLU` into one Triton kernel removes an intermediate HBM round-trip and a kernel launch. That pays off at small-batch, memory-bound FFN projections, up to 1.73x there, with the fused kernels at about parity (median 0.96x) elsewhere. The suite is built to show where that crossover is.
+**Where the win is.** cuBLAS is very well tuned for large dense GEMM, so a bare Triton GEMM is generally not faster (median about 0.78x vs PyTorch/cuBLAS across the 76 shapes). The win comes from fusion: folding `linear + bias + GeLU/SiLU` into one Triton kernel removes two intermediate HBM round-trips and two kernel launches (the eager baseline is three: GEMM, bias add, activation — see `src/bytes_model.py`). That pays off at small-batch, memory-bound FFN projections, up to 1.73x there, with the fused kernels at about parity (median 0.96x) elsewhere. The suite is built to show where that crossover is.
 
 ## Roofline: why the win is where it is
 
@@ -21,7 +21,7 @@ It reports p50 latency, GEMM-equivalent TFLOP/s, effective memory bandwidth, and
 
 The two headline results are the same story seen twice. Plotting each shape's achieved throughput against its operational intensity (FLOP per byte of DRAM traffic) on the A100's ceilings (312 TFLOP/s compute, 2039 GB/s HBM, ridge at **153 FLOP/byte**) splits the 76 shapes cleanly:
 
-- **Small-batch shapes (M=128) are memory-bound** — operational intensity about 125 FLOP/byte, left of the ridge, reaching only ~39% of compute peak. They are bottlenecked by HBM traffic, so cutting an epilogue round-trip via fusion is a direct latency win. The best fused result (1.73x at M=128, N=11008, K=4096) lands exactly here.
+- **Small-batch shapes (M=128) are memory-bound** — operational intensity about 125 FLOP/byte, left of the ridge, reaching only ~39% of compute peak. They are bottlenecked by HBM traffic, so cutting the epilogue round-trips via fusion is a direct latency win. The best fused result (1.73x at M=128, N=11008, K=4096) lands exactly here.
 - **Larger-batch shapes (M>=256) are compute-bound** — right of the ridge, reaching ~60% of peak, where cuBLAS's tuned tensor-core scheduling beats a bare Triton GEMM (the ~0.78x median).
 
 The fusion win is not incidental: the roofline predicts the regime it falls in. Built from the committed CSVs with no GPU (operational intensity uses the algorithmic-minimum DRAM traffic, so achieved-vs-roof is the efficiency headroom). Regenerate: `python scripts/roofline.py`.
