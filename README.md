@@ -9,7 +9,7 @@ It reports p50 latency, GEMM-equivalent TFLOP/s, effective memory bandwidth, and
 | Result | Value | Where |
 |---|---|---|
 | Fused `linear+bias+GeLU` vs cuBLAS, best small-batch FFN shape | **1.73x lower p50 latency** | M=128, N=11008, K=4096 |
-| Triton GEMM peak throughput | **215 TFLOP/s (~69% of A100 fp16 tensor-core peak)** | rectangular FFN shapes |
+| Triton GEMM peak throughput | **213 TFLOP/s (~68% of A100 fp16 tensor-core peak)** | bare autotuned GEMM, rectangular FFN shapes; the fused linear+bias+GELU kernel peaks at 215 TFLOP/s GEMM-equivalent |
 | Shapes benchmarked | **76** LLaMA/Mistral-style projection and FFN GEMMs | `src/shapes.py` |
 | Metrics per shape | p50/p90 latency, TFLOP/s, GB/s, p90/p50 jitter | `data/*.csv` |
 
